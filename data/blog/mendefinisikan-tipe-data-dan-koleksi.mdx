@@ -1,0 +1,45 @@
+---
+title: Mendefinisikan Tipe Data dan Koleksi pada Golang
+date: '2023-02-15'
+tags: ['golang']
+draft: false
+layout: PostSimple
+---
+
+> Jika ada pertanyaan dapat menghubungi telegram saya [disini](https://t.me/adiprastiyo28)
+
+#### Prasyarat:
+
+- Membaca artikel [Membuat Project Baru dengan Golang](membuat-project-baru-dengan-golang)
+
+### Membuat Tipe Data _Custom_
+
+1. Membuat tipe data _custom_ untuk merepresentasikan respons konfirmasi kedatangan para undangan.
+
+```go
+type Undangan struct {
+  Nama, Email, Telepon string
+  BersediaHadir bool
+}
+```
+
+_Struct_ memungkinkan untuk mengelompokkan satu set nilai terkait yang tipe datanya sama.
+
+2. Selanjutnya kita akan mengumpulkan nilai dari `Undangan`.
+
+```go
+var responses = make([]*Undangan, 0, 10)
+```
+
+`make()` merupakan _built-in function_ yang disediakan Go, digunakan untuk menginisialisasi `slice` baru.  
+`[]*Undangan` merupakan argumen pertama dari `make` untuk menentukan tipe data yang akan digunakan _slice_ untuk disimpan. tanda `*` disini merupakan pointer.  
+Dua argumen terakhir pada `make` masing-masing merupakan _size_ dan _capacity_ argumen. _Slices_ secara otomatis mengubah ukurannya apabila ditambahkan item baru.  
+_Slice_ tersebut diinisialisasi ke sebuah variabel yaitu `var responses` sehingga dapat digunakan pada tempat lain dalam kode.
+
+#### Rekomendasi artikel selanjutnya
+
+- [Membuat Template HTML pada Golang](membuat-template-html-pada-golang)
+
+### DAFTAR PUSTAKA
+
+- Freeman, Adam. 2022. _Pro Go: The Complete Guide to Programming Reliable and Efficient Software Using Golang_. Appress.

@@ -1,0 +1,220 @@
+---
+title: Membuat Template HTML pada Golang
+date: '2023-02-15'
+tags: ['golang']
+draft: false
+layout: PostSimple
+---
+
+> Jika ada pertanyaan dapat menghubungi telegram saya [disini](https://t.me/adiprastiyo28)
+
+#### Prasyarat:
+
+- Membaca artikel [Mendefinisikan Tipe Data dan Koleksi pada Golang](mendefinisikan-tipe-data-dan-koleksi)
+
+Go mempunyai _standard library_ yang mendukung template HTML.
+
+1. Tambahkan file `layout.html` pada folder `undangan-pesta`.
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Ayo Berpesta!!!</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.1/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body class="p-2">
+    {{ block "body" .}} Letakkan konten disini {{ end }}
+  </body>
+</html>
+```
+
+Untuk lebih memudahkan, diisini kita menggunakan _stylesheet_ dari Bootsrap CSS framework.  
+Kurung kurawa rangkap digunakan untuk menyisipkan konten dinamis ke dalam output yang dihasilkan oleh template.
+
+2. Buat file bernama `welcome.html` untuk membuat konten yang akan menyapa user.
+
+```html
+{{ define "body"}}
+<div class="text-center">
+  <h3>Kami akan mengadakan pesta!</h3>
+  <h4>Dan kamu diundang untuk menghadiri</h4>
+  <a class="btn btn-primary" href="/form"> Konfirmasi Undangan Sekarang </a>
+</div>
+{{ end }}
+```
+
+3. Buat file bernama `form.html` untuk membuat template yang memungkinkan pengguna memberikan tanggapan.
+
+```html
+{{ define "body" }}
+
+<div class="h5 bg-primary m-2 p-2 text-center text-white">Konfirmasi Undangan</div>
+
+{{ if gt (len .Errors) 0}}
+<ul class="text-danger mt-3">
+  {{ range .Errors }}
+  <li>{{ . }}</li>
+  {{ end }}
+</ul>
+{{ end }}
+
+<form method="post" class="m-2">
+  <div class="form-group my-1">
+    <label>Nama:</label>
+    <input name="name" class="form-control" value="{{.Name}}" />
+  </div>
+  <div class="form-group my-1">
+    <label>Email:</label>
+    <input name="email" class="form-control" value="{{.Email}}" />
+  </div>
+  <div class="form-group my-1">
+    <label>Nomer Telepon:</label>
+    <input name="phone" class="form-control" value="{{.Phone}}" />
+  </div>
+  <div class="form-group my-1">
+    <label>Apakah kamu akan hadir?</label>
+    <select name="willatend" class="form-select">
+      <option value="true" {{if .WillAtend}}selected{{end}}>Ya, aku akan hadir</option>
+      <option value="false" {{if not .WillAtend}}selected{{end}}>
+        Tidak, aku tidak dapat hadir
+      </option>
+    </select>
+  </div>
+  <button class="btn btn-primary mt-3" type="submit">Submit Respon</button>
+</form>
+
+{{end}}
+```
+
+4. Buat file bernama `thanks.html` untuk menampilkan ungkapan terimakasih bagi yang akan datang ke pesta.
+
+```html
+{{define "body"}}
+<div class="text-center">
+  <h1>Terimakasih, {{ . }}!</h1>
+  <div>Akan kami tunggu kehadiranmu. Makanan akan siap untuk dihidangkan!</div>
+  <div>Klik <a href="/list">disini</a> untuk melihat siapa saja yang akan datang.</div>
+</div>
+{{end}}
+```
+
+5. Buat file bernama `sorry.html` untuk yang akan ditampilkan saat undangan ditolak.
+
+```html
+{{define "body"}}
+<div class="text-center">
+  <h1>Akan terasa berbeda tanpamu, {{ . }}!</h1>
+  <div>Sayang sekali kamu tidak bisa hadir, tapi terimakasih sudah memberitahu kami</div>
+  <div>
+    Klik <a href="/list">here</a> untuk melihat siapa saja yang akan hadir, siapa tahu kamu berubah
+    pikiran.
+  </div>
+</div>
+{{end}}
+```
+
+6. Buat file bername list.html untuk menampilkan siapa saja yang akan menghadiri pesta.
+
+```html
+{{define "body"}}
+<div class="p-2 text-center">
+  <h2>Berikut adalah daftar siapa saja yang akan menghadiri pesta</h2>
+  <table>
+    <tr>
+      <th>Nama</th>
+      <th>Email</th>
+      <th>Telepon</th>
+    </tr>
+    <tbody>
+      {{range .}} {{if .WillAtend}}
+      <tr>
+        <td>{{ .Name }}</td>
+        <td>{{ .Email }}</td>
+        <td>{{ .Phone }}</td>
+      </tr>
+      {{end}} {{end}}
+    </tbody>
+  </table>
+</div>
+{{end}}
+```
+
+7. Selanjutnya buat template yang dapat digunakan untuk menghasilkan konten.
+
+```go {4,13-16,19}
+package main
+
+import (
+	"text/template"
+)
+
+type Undangan struct {
+  Nama, Email, Telepon string
+  BersediaHadir bool
+}
+
+var responses = make([]*Undangan, 0, 10)
+var templates = make(map[string]*template.Template, 3)
+func loadTemplates()  {
+  // tampung templates disini
+}
+
+func main()  {
+  loadTemplates()
+}
+```
+
+8. Kini kita perlu mengimplemaentasikan fungsi `loadTemplates`.
+
+```go {2-11}
+func loadTemplates()  {
+  templateNames := [5]string{"welcome", "form", "thanks", "sorry", "list"}
+  for index, name := range templateNames {
+    t, err := template.ParseFiles("layout.html", name + ".html")
+    if (err == nil) {
+      templates[name] = t
+      fmt.Println("Memuat template", index, name)
+    } else {
+      panic(err)
+    }
+  }
+}
+```
+
+Disini kita membuat variabel bernama templates, `var templates = make(map[string]*template.Template, 3)` _Key_ dari _map_ tersebut adalah _string_, dan _value typenya_ adalah `*template.Template`.  
+Selanjutnya kita membuat fungsi `loadTemplates` yang bertanggunjawab untuk memuat file HTML.  
+`html/template` _package_ menyediakan fungsi bernama `ParseFiles` yang digunakan untuk memuat dan memproses file HTML.  
+Jika err adalah nil, maka kita menambahkan _key-value_ ke _map_, menggunakan _value name_ sebagai key, dan `*template.Template` ditugaskan ke `t` sebagai _valuenya_.  
+Jika err tidak nil, itu berarti terjadi sesuatu yang salah, Go menyediakan fungsi bernama `panic` yang dapat dipanggil saat terjadi error.
+
+9. Jalankan projek dengan perintah berikut:
+
+```bash
+$ go run .
+```
+
+Outputnya sebagai berikut:
+
+```bash
+Memuat template 0 welcome
+Memuat template 1 form
+Memuat template 2 thanks
+Memuat template 3 sorry
+Memuat template 4 list
+```
+
+#### Rekomendasi artikel selanjutnya
+
+- [Membuat HTTP Handlers dan Server pada Golang](membuat-http-handlers-dan-server-pada-golang)
+
+### DAFTAR PUSTAKA
+
+- Freeman, Adam. 2022. _Pro Go: The Complete Guide to Programming Reliable and Efficient Software Using Golang_. Appress.
+- [html/template golang package](https://pkg.go.dev/html/template)
+- [bootstrap 5](https://getbootstrap.com/docs/5.3/getting-started/introduction/)

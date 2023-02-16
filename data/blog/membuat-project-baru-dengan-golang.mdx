@@ -1,0 +1,52 @@
+---
+title: Membuat Project Baru dengan Golang
+date: '2023-02-14'
+tags: ['golang']
+draft: false
+summary: memulai project baru dengan menggunakan golang
+layout: PostSimple
+---
+
+[Link Video Tutorial](https://youtu.be/CKy8fLNPN5k)
+
+> Jika ada pertanyaan dapat menghubungi telegram saya [disini](https://t.me/adiprass28)
+
+#### Prasyarat:
+
+- Sudah menginstall golang
+
+### Membuat Project Baru
+
+1. Buat direktori baru bernama `undangan-pesta`, kemudian pada folder tersebut jalankan perintah berikut untuk menginisialisasi project barun dengan golang.
+
+```sh
+$ go mod init undanganpesta
+```
+
+2. Buat file bernama `main.go`, tuliskan kode berikut:
+
+```go showLineNumbers
+package main
+
+import "fmt"
+
+func main()  {
+  fmt.Println("membuat fitur")
+}
+```
+
+Kita dapat dapat menggunakan _depedency package_ dengan menggunakan `import` _statement_. Fungsi `main()` merupakan _entry point_ pada aplikasi. fmt _package_ merupakan _standard library_ yang disediakan Go.
+
+3. Menjalankan program
+
+```bash
+$ go run .
+```
+
+#### Rekomendasi artikel selanjutnya
+
+- [Mendefinisikan Tipe Data dan Koleksi pada Golang](mendefinisikan-tipe-data-dan-koleksi)
+
+## DAFTAR PUSTAKA
+
+- Freeman, Adam. 2022. _Pro Go: The Complete Guide to Programming Reliable and Efficient Software Using Golang_. Appress.
