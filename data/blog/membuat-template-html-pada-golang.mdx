@@ -67,7 +67,7 @@ Kurung kurawa rangkap digunakan untuk menyisipkan konten dinamis ke dalam output
 <form method="post" class="m-2">
   <div class="form-group my-1">
     <label>Nama:</label>
-    <input name="name" class="form-control" value="{{.Name}}" />
+    <input name="name" class="form-control" value="{{.Nama}}" />
   </div>
   <div class="form-group my-1">
     <label>Email:</label>
@@ -75,13 +75,13 @@ Kurung kurawa rangkap digunakan untuk menyisipkan konten dinamis ke dalam output
   </div>
   <div class="form-group my-1">
     <label>Nomer Telepon:</label>
-    <input name="phone" class="form-control" value="{{.Phone}}" />
+    <input name="phone" class="form-control" value="{{.Telepon}}" />
   </div>
   <div class="form-group my-1">
     <label>Apakah kamu akan hadir?</label>
     <select name="willatend" class="form-select">
-      <option value="true" {{if .WillAtend}}selected{{end}}>Ya, aku akan hadir</option>
-      <option value="false" {{if not .WillAtend}}selected{{end}}>
+      <option value="true" {{if .BersediaHadir}}selected{{end}}>Ya, aku akan hadir</option>
+      <option value="false" {{if not .BersediaHadir}}selected{{end}}>
         Tidak, aku tidak dapat hadir
       </option>
     </select>
@@ -132,11 +132,11 @@ Kurung kurawa rangkap digunakan untuk menyisipkan konten dinamis ke dalam output
       <th>Telepon</th>
     </tr>
     <tbody>
-      {{range .}} {{if .WillAtend}}
+      {{range .}} {{if .BersediaHadir}}
       <tr>
-        <td>{{ .Name }}</td>
+        <td>{{ .Nama }}</td>
         <td>{{ .Email }}</td>
-        <td>{{ .Phone }}</td>
+        <td>{{ .Telepon }}</td>
       </tr>
       {{end}} {{end}}
     </tbody>
