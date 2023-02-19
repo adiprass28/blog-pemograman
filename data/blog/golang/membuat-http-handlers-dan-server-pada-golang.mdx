@@ -1,0 +1,163 @@
+---
+title: Membuat HTTP Handlers dan Server pada Golang
+date: '2023-02-16'
+tags: ['golang']
+draft: false
+summary: '#4 menguasai bahasa golang'
+layout: PostSimple
+---
+
+> Jika ada pertanyaan dapat menghubungi telegram saya [disini](https://t.me/adiprastiyo28)
+
+#### Prasyarat:
+
+- Membaca artikel [Membuat Template HTML pada Golang](membuat-template-html-pada-golang)
+
+1. Update pada file main.go.
+
+```go {6,29-31,33-35,39-40}
+package main
+
+import (
+	"fmt"
+	"net/http"
+	"text/template"
+)
+
+type Undangan struct {
+  Nama, Email, Telepon string
+  BersediaHadir bool
+}
+
+var responses = make([]*Undangan, 0, 10)
+var templates = make(map[string]*template.Template, 3)
+func loadTemplates()  {
+  templateNames := [5]string{"welcome", "form", "thanks", "sorry", "list"}
+  for index, name := range templateNames {
+    t, err := template.ParseFiles("layout.html", name + ".html")
+    if (err == nil) {
+      templates[name] = t
+      fmt.Println("Memuat template", index, name)
+    } else {
+      panic(err)
+    }
+  }
+}
+
+func welcomeHandler(writer http.ResponseWriter, request *http.Request)  {
+  templates["welcome"].Execute(writer, nil)
+}
+
+func listHandler(writer http.ResponseWriter, request *http.Request) {
+  templates["list"].Execute(writer, responses)
+}
+
+func main()  {
+  loadTemplates()
+  http.HandleFunc("/", welcomeHandler)
+  http.HandleFunc("/list", listHandler)
+}
+```
+
+Go menyediakan _standard library_ untuk membuat _HTTP servers_ dan _handling HTTP Requests_. Pertama, saya perlu mendefinisikan fungsi yang akan dijalankan saat pengguna melakukan _request default URL_ pada aplikasi yakni _path_ `/`, dan akan menampilkan list saat merequest _path_ `/list`.  
+`net/http` _package_ mendefinisikan fungsi `HandleFunc`, yang digunakan untuk mespesifikasi _URL path_ dan _menghandle_ _request_ yang sesuai.
+
+```go
+  http.HandleFunc("/", welcomeHandler)
+  http.HandleFunc("/list", listHandler)
+```
+
+2. Mulai memproses _requests_ dengan _HTTP server_.
+
+```go {5-8}
+func main()  {
+  loadTemplates()
+  http.HandleFunc("/", welcomeHandler)
+  http.HandleFunc("/list", listHandler)
+  err := http.ListenAndServe(":5000", nil)
+  if (err != nil) {
+    fmt.Println(err)
+  }
+}
+```
+
+3. Jalankan aplikasi
+
+```bash
+$ go run .
+```
+
+Buka browser pada port 5000: `http://localhost:5000`.  
+Saat kita mengklik tombol "Konfirmasi Undangan Sekarang", tombol tersebut tidak memiliki efek karena tidak ada _handler_ untuk `/form` sebagai target URLnya.
+
+4. Mengimplementasikan fungsi _form handling_.
+
+```go {2-5,7-13,19}
+  ....
+type formData struct {
+  *Undangan
+  Error []string
+}
+
+func formHandler(writer http.ResponseWriter, request *http.Request)  {
+  if request.Method == http.MethodGet {
+    templates["form"].Execute(writer, formData {
+      Undangan: &Undangan{},Error: []string {},
+    })
+  }
+}
+
+func main()  {
+  loadTemplates()
+  http.HandleFunc("/", welcomeHandler)
+  http.HandleFunc("/list", listHandler)
+  http.HandleFunc("/form", formHandler)
+  err := http.ListenAndServe(":5000", nil)
+  if (err != nil) {
+    fmt.Println(err)
+  }
+}
+```
+
+5. Jalankan aplikasi tersebut kemudian buka lagi web browses pada port 5000.
+
+```bash
+$ go run .
+```
+
+Disini kita telah mendefinisikan _struct type_ baru bernama `formData`. Go _struct_ dapat lebih dari kumpulan _key-value_, kita dapat membuat _struct_ baru menggunakan _struct_ yang sudah ada.
+
+6. Sekarang kita akan _menghandle POST request_ dan membaca data yang pengguna telahah inputkan kedalam form. Pada file `main.go`.
+
+```go {6-20}
+func formHandler(writer http.ResponseWriter, request *http.Request) {
+  if request.Method == http.MethodGet {
+    templates["form"].Execute(writer, formData {
+      Undangan: &Undangan{}, Errors: []string {},
+    })
+  } else if request.Method == http.MethodPost {
+      request.ParseForm()
+      responseData := Undangan {
+        Nama: request.Form["nama"][0],
+        Email: request.Form["email"][0],
+        Telepon: request.Form["telepon"][0],
+        BersediaHadir: request.Form["bersediahadir"][0] == "true",
+    }
+    responses = append(responses, &responseData)
+    if responseData.BersediaHadir {
+      templates["thanks"].Execute(writer, responseData.Nama)
+    } else {
+      templates["sorry"].Execute(writer, responseData.Nama)
+    }
+  }
+}
+```
+
+`ParseForm` _method_ memproses data form yang terdapat dalam _request_ HTTP dan mengisi _map_.  
+Fungsi `append` digunakan untuk menambahkan _value_ pada _slice_. Kita menggunakan _ampersand_ (&) untuk membuat _pointer_ ke _value_ `Undangan` yang telah kita buat.
+
+7. Menambahkan validasi data.
+
+### DAFTAR PUSTAKA
+
+- Freeman, Adam. 2022. _Pro Go: The Complete Guide to Programming Reliable and Efficient Software Using Golang_. Appress.
